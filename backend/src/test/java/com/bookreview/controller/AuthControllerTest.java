@@ -129,7 +129,7 @@ class AuthControllerTest {
         when(jwtService.generateToken(loginRequest.getEmail(), Map.of())).thenReturn("jwt-token");
 
         // When
-        ResponseEntity<AuthResponse> response = authController.login(loginRequest);
+        ResponseEntity<AuthResponse> response = (ResponseEntity<AuthResponse>) authController.login(loginRequest);
 
         // Then
         assertThat(response.getStatusCodeValue()).isEqualTo(200);

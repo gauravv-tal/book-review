@@ -2,6 +2,8 @@ package com.bookreview.service;
 
 import com.bookreview.model.Book;
 import com.bookreview.repository.BookRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -35,23 +37,28 @@ public class BookService {
 
     public Page<Book> search(String title, String author, String genre, Integer year, Pageable pageable) {
         Specification<Book> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (title != null && !title.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase(Locale.ROOT) + "%"));
-            }
-            if (author != null && !author.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("author")), "%" + author.toLowerCase(Locale.ROOT) + "%"));
-            }
-            if (genre != null && !genre.isBlank()) {
-                // simple contains in comma-separated string
-                predicates.add(cb.like(cb.lower(root.get("genres")), "%" + genre.toLowerCase(Locale.ROOT) + "%"));
-            }
-            if (year != null) {
-                predicates.add(cb.equal(root.get("year"), year));
-            }
+            List<Predicate> predicates = buildSearchPredicate(title, author, genre, year, root, cb);
             return cb.and(predicates.toArray(new Predicate[0]));
         };
         return bookRepository.findAll(spec, pageable);
+    }
+
+    public static List<Predicate> buildSearchPredicate(String title, String author, String genre, Integer year, Root<Book> root, CriteriaBuilder cb) {
+        List<Predicate> predicates = new ArrayList<>();
+        if (title != null && !title.isBlank()) {
+            predicates.add(cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase(Locale.ROOT) + "%"));
+        }
+        if (author != null && !author.isBlank()) {
+            predicates.add(cb.like(cb.lower(root.get("author")), "%" + author.toLowerCase(Locale.ROOT) + "%"));
+        }
+        if (genre != null && !genre.isBlank()) {
+            // simple contains in comma-separated string
+            predicates.add(cb.like(cb.lower(root.get("genres")), "%" + genre.toLowerCase(Locale.ROOT) + "%"));
+        }
+        if (year != null) {
+            predicates.add(cb.equal(root.get("year"), year));
+        }
+        return predicates;
     }
 
     public int importCsv(MultipartFile file) throws Exception {

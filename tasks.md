@@ -93,9 +93,8 @@
 
 — Milestone 5: Recommendations
 - [ ] Backend: `/recommendations` endpoint
-- [ ] Strategy 1 (MVP): Top-rated books
-- [ ] Strategy 2: Based on favourites/genres (optional)
-- [ ] Strategy 3: Perplexity Pro API integration (env: `PERPLEXITY_API_KEY`) with fallback to Strategy 1
+- [ ] Top-rated books
+- [ ] Perplexity Pro API integration (env: `PERPLEXITY_API_KEY`) 
 - [ ] Frontend: Recommendations page/section
 - [ ] Tests: Service stub tests and UI smoke tests
 

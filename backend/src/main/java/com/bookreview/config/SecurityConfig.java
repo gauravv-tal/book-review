@@ -39,6 +39,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/books/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/reviews/book/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/recommendations/top-rated").permitAll()
+                .requestMatchers("/recommendations/ai").authenticated()
                 .requestMatchers("/favourites/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
@@ -57,3 +59,4 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 }
+
