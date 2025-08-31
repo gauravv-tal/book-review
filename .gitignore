@@ -1,0 +1,11 @@
+backend/src/.DS_Store
+/backend/.idea
+backend/src/main/resources/application-dev.properties
+/backend/target
+infra/terraform/terraform.tfvars
+infra/terraform/terraform.tfvars.example
+infra/terraform/terraform.tfstate
+infra/terraform/tfplan
+infra/terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/6.10.0/darwin_amd64/terraform-provider-aws_v6.10.0_x5
+infra/terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/6.10.0/darwin_amd64/LICENSE.txt
+infra/terraform/.terraform.lock.hcl
