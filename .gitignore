@@ -16,3 +16,4 @@ infra/terraform/bkreview_plan
 *.tfstate
 infra/terraform/envs/dev/.terraform/*
 infra/terraform/envs/dev/.terraform.lock.hcl
+frontend/package-lock.json
