@@ -1,5 +1,109 @@
 # Task Breakdown – Book Review Platform (End-to-End Pipeline First)
 
+---
+
+## 9. Deployment via EC2 + Secrets Manager (Terraform) and GitHub Actions
+
+### 9.1 Plan and Cleanup
+- [ ] Decide target AWS region and account for deployment (e.g., `ap-south-1`).
+- [ ] Decommission/ignore prior ECS-focused infra (keep for history but do not use). Update docs to reflect EC2 path.
+- [ ] Define environments: `dev` (default) and `prod` (optional) with separate state/backends.
+
+### 9.2 Terraform Project Structure (new)
+- [ ] Create `infra/terraform/` with the following modules and stacks:
+  - [ ] `modules/secrets` (AWS Secrets Manager for app secrets)
+  - [ ] `modules/ec2` (Launch Template, Auto Scaling Group, IAM instance profile, user-data)
+  - [ ] `modules/alb` (ALB + target group + listener + HTTPS via ACM)
+  - [ ] `modules/ecr` (ECR repo for backend image)
+- [ ] Outputs for: ALB DNS, RDS endpoint, Secrets ARNs, EC2 ASG name, ECR URL.
+
+### 9.3 Networking and Security
+- [ ] VPC with 2+ AZs, public subnets (ALB/bastion), private subnets (EC2, RDS).
+- [ ] Security groups:
+  - [ ] ALB SG: allow 80/443 from internet; forward to EC2 target group port (e.g., 8080).
+  - [ ] EC2 SG: allow from ALB SG; egress to RDS, ECR, Secrets Manager, SSM.
+  - [ ] RDS SG: allow 5432 from EC2 SG only.
+- [ ] Optional: SSM Session Manager enabled on instances; disable public SSH if not needed.
+
+### 9.4 Secrets and Configuration
+- [ ] Create Secrets Manager secrets:
+  - [ ] `/book-review/jwt/secret`
+  - [ ] `/book-review/db/username`
+  - [ ] `/book-review/db/password`
+  - [ ] `/book-review/ses/sender` (optional)
+  - [ ] Any external API keys (e.g., `PERPLEXITY_API_KEY`) as separate secrets.
+- [ ] Allow EC2 instance role `secretsmanager:GetSecretValue` for these ARNs.
+- [ ] Non-sensitive config via SSM Parameter Store (e.g., `SPRING_PROFILES_ACTIVE=prod`).
+- [ ] Plan Spring Boot config to read from env vars; map secrets to env at runtime.
+
+### 9.5 Compute (EC2) and Runtime
+- [ ] ECR repo for backend; tag strategy: `main-<sha>` and `latest`.
+- [ ] Launch Template with:
+  - [ ] IAM instance profile (ECR pull, Secrets read, CloudWatch logs, SSM)
+  - [ ] User data script to:
+    - [ ] Install Docker + awscli + amazon-ssm-agent (if not in AMI)
+    - [ ] `aws ecr get-login-password | docker login`
+    - [ ] Pull image tag (e.g., `latest` or from SSM parameter)
+    - [ ] Retrieve secrets with AWS CLI and export as env vars
+    - [ ] Run Spring Boot container with proper ports, restart policy, and CloudWatch Logs integration (via awslogs driver or CW agent)
+- [ ] Auto Scaling Group across 2+ AZs; min=1 (dev), desired=1, max=2.
+- [ ] ALB target group health checks against `/actuator/health`.
+- [ ] HTTPS via ACM cert on ALB; redirect HTTP->HTTPS.
+
+### 9.6 Database (RDS PostgreSQL)
+- [ ] Provision RDS (Postgres), instance class (dev-friendly), storage, backups, deletion protection (toggle per env).
+- [ ] Store DB creds in Secrets Manager; pass DB host/port/name via env/SSM.
+- [ ] Security hardening: public access off, encrypted at rest, SG restrictions.
+- [ ] Flyway/Liquibase (if used) strategy defined; otherwise rely on JPA schema for dev only.
+
+### 9.7 Frontend Deployment
+- [ ] Decision: keep S3 + CloudFront for React static hosting (recommended) or Nginx on EC2.
+  - [ ] If S3+CF: create bucket, OAC, and distribution; CI to upload artifacts and invalidate cache.
+  - [ ] If EC2: add second container (Nginx) or host with the same instance; adjust user data and ALB rules.
+
+### 9.8 Observability and Ops
+- [ ] CloudWatch Logs for backend app logs.
+- [ ] CloudWatch Alarms: high 5xx on ALB, high latency, low healthy hosts, instance CPU/memory.
+- [ ] Metrics dashboard (ALB, ASG, RDS).
+- [ ] Error budget and rollback plan (repoint ASG to previous image tag; Instance Refresh).
+
+### 9.9 GitHub Actions CI/CD
+- [ ] Configure OIDC or long-lived AWS credentials in GitHub (prefer OIDC role with trust policy).
+- [ ] Backend workflow:
+  - [ ] Trigger on push to `main`
+  - [ ] Build and test Maven project
+  - [ ] Build Docker image, tag as `main-<sha>` and `latest`
+  - [ ] Push to ECR
+  - [ ] Option A (immutable): Update Launch Template with new image tag via Terraform, then `terraform plan` + `apply`, trigger ASG Instance Refresh
+  - [ ] Option B (mutable): Use SSM RunCommand to `docker pull` and restart service on instances (no template change)
+- [ ] Infra workflow:
+  - [ ] `terraform fmt`/`validate`/`init`/`plan` on PRs
+  - [ ] `apply` to `dev` on merge to `main` with manual approval
+  - [ ] Optional `prod` with `environment` protection rules
+- [ ] Frontend workflow:
+  - [ ] Build React app
+  - [ ] If S3+CF: sync to S3 and invalidate CloudFront
+  - [ ] If EC2: copy artifacts and restart Nginx container/service
+
+### 9.10 Application Configuration Mapping
+- [ ] Map Secrets Manager values to env for Spring Boot:
+  - [ ] `JWT_SECRET` -> used by `JwtService`
+  - [ ] `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`
+  - [ ] `EMAIL_ENABLED`, `SES_SENDER`
+  - [ ] Any third-party API keys
+- [ ] Update `application-prod.properties` to use env placeholders (already present patterns) and verify profile activation via `SPRING_PROFILES_ACTIVE=prod`.
+
+### 9.11 Runbook and Documentation
+- [ ] Update README with deployment steps for EC2 path
+- [ ] Document how to rotate secrets (manual and automated)
+- [ ] Document rollback procedure (ASG Instance Refresh to previous LT version / SSM pull previous tag)
+- [ ] Document how to access logs and metrics; health-check endpoints
+
+### 9.12 Decommission ECS (Optional)
+- [ ] Archive or remove previous ECS Terraform stacks and GH workflows
+- [ ] Remove unused ECR/ECS resources if any; cleanup IAM roles/policies
+- [ ] Update architecture docs to reflect EC2 path
+
 ## 1. Initial End-to-End Pipeline (Hello World)
 
 ### 1.1 Backend (Spring Boot)
@@ -115,3 +219,4 @@
 - [ ] Infra: ALB for backend, least-privilege security groups
 - [ ] Frontend hosting: S3 + CloudFront; OAC, cache invalidation
 - [ ] CI/CD: Build, test, coverage report; Docker to ECR; Terraform plan/apply with approvals
+

@@ -1,0 +1,75 @@
+name: Backend - Build and Push to ECR
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ecr.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  IMAGE_TAG: main-${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build backend JAR (skip tests)
+        run: mvn -q -f backend/pom.xml clean package -DskipTests
+
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials (Secrets fallback)
+        if: env.AWS_ROLE_TO_ASSUME == ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ECR repo from Terraform output (optional)
+        id: ecr
+        run: |
+          if [ -f infra/terraform/envs/dev/terraform.tfstate ]; then
+            ECR_URL=$(jq -r '.outputs.ecr_repository_url.value' infra/terraform/envs/dev/terraform.tfstate || true)
+          fi
+          if [ -z "$ECR_URL" ]; then
+            # Fallback: use repository name secret and account ID
+            if [ -z "${{ secrets.AWS_ACCOUNT_ID }}" ] || [ -z "${{ secrets.ECR_REPOSITORY_NAME }}" ]; then
+              echo "ECR URL not found; set AWS_ACCOUNT_ID and ECR_REPOSITORY_NAME repo secrets." && exit 1
+            fi
+            ECR_URL="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY_NAME }}"
+          fi
+          echo "repo=$ECR_URL" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "${{ steps.ecr.outputs.repo }}"
+
+      - name: Build Docker image
+        run: docker build -t "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG" backend/
+
+      - name: Push Docker image
+        run: docker push "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG"
+
+      - name: Output image ref
+        run: echo "Image pushed: ${{ steps.ecr.outputs.repo }}:$IMAGE_TAG"

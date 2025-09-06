@@ -1,0 +1,106 @@
+variable "name_prefix" {
+  description = "Prefix for resource names"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs for ASG"
+  type        = list(string)
+}
+
+variable "alb_security_group_id" {
+  description = "ALB security group ID allowed to access instances"
+  type        = string
+}
+
+variable "target_group_arn" {
+  description = "Target group ARN to attach ASG instances"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "desired_capacity" {
+  description = "ASG desired capacity"
+  type        = number
+  default     = 1
+}
+
+variable "min_size" {
+  description = "ASG min size"
+  type        = number
+  default     = 1
+}
+
+variable "max_size" {
+  description = "ASG max size"
+  type        = number
+  default     = 2
+}
+
+variable "ecr_repository_url" {
+  description = "ECR repository URL for the backend image"
+  type        = string
+}
+
+variable "image_tag" {
+  description = "Docker image tag to deploy"
+  type        = string
+  default     = "latest"
+}
+
+variable "container_port" {
+  description = "Container port exposed by the app"
+  type        = number
+  default     = 8080
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+variable "secrets_map" {
+  description = "Map of secret logical names to values (used to determine if secrets policy is needed)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "jwt_secret_arn" {
+  description = "Secrets Manager ARN for JWT secret"
+  type        = string
+  default     = ""
+}
+
+variable "db_username_secret_arn" {
+  description = "Secrets Manager ARN for DB username"
+  type        = string
+  default     = ""
+}
+
+variable "db_password_secret_arn" {
+  description = "Secrets Manager ARN for DB password"
+  type        = string
+  default     = ""
+}
+
+variable "db_url" {
+  description = "JDBC URL for database (can be provided via SSM or tfvar)"
+  type        = string
+  default     = ""
+}
+
+variable "tags" {
+  description = "Tags to apply"
+  type        = map(string)
+  default     = {}
+}
