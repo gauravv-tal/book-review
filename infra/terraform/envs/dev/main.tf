@@ -76,6 +76,16 @@ module "alb" {
   tags              = var.tags
 }
 
+# Frontend (S3 + CloudFront)
+module "frontend" {
+  source       = "../../modules/frontend"
+  name_prefix  = var.app_name
+  index_document = "index.html"
+  error_document = "index.html"
+  price_class    = "PriceClass_100"
+  tags         = var.tags
+}
+
 # EC2 module
 module "ec2" {
   source                    = "../../modules/ec2"

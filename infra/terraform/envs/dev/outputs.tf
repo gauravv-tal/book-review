@@ -13,3 +13,12 @@ output "ecr_repository_url" {
   value       = module.ecr.repository_url
 }
 
+output "frontend_bucket_name" {
+  description = "S3 bucket for frontend"
+  value       = module.frontend.bucket_name
+}
+
+output "frontend_cloudfront_domain" {
+  description = "CloudFront domain for frontend"
+  value       = module.frontend.cloudfront_domain_name
+}
