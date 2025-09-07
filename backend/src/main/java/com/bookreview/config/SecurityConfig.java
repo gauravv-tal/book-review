@@ -28,14 +28,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        // Configure actuator endpoints security
+        http.securityMatcher("/actuator/**")
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/health/**").permitAll()
+                .requestMatchers("/actuator/info").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ACTUATOR")
+                .anyRequest().denyAll()
+            )
+            .httpBasic();
+
+        // Configure application security
+        http.securityMatcher("/**")
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/auth/**",
-                    "/actuator/**",
                     "/api/hello",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
