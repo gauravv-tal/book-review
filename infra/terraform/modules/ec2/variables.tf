@@ -135,6 +135,12 @@ variable "email_enabled" {
   default     = false
 }
 
+variable "log_group_name" {
+  description = "CloudWatch Logs group name for application logs"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags to apply"
   type        = map(string)

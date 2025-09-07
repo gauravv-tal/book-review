@@ -62,6 +62,36 @@ resource "aws_iam_role_policy_attachment" "secrets_read_attach" {
   policy_arn = aws_iam_policy.secrets_read[0].arn
 }
 
+# Allow instance to write logs to CloudWatch Logs
+resource "aws_iam_policy" "cw_logs_write" {
+  name        = "${var.name_prefix}-cw-logs-write"
+  description = "Allow instance to write application logs to CloudWatch Logs"
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = ["logs:CreateLogGroup"],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cw_logs_write_attach" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.cw_logs_write.arn
+}
+
 resource "aws_iam_instance_profile" "this" {
   name = "${var.name_prefix}-ec2-profile"
   role = aws_iam_role.ec2_role.name
@@ -122,6 +152,7 @@ resource "aws_launch_template" "this" {
     smtp_port               = var.smtp_port
     email_sender            = var.email_sender
     email_enabled           = var.email_enabled
+    log_group_name          = var.log_group_name
   }))
 
   tag_specifications {

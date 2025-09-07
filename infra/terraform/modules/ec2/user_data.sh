@@ -15,6 +15,7 @@ SMTP_HOST="${smtp_host}"
 SMTP_PORT="${smtp_port}"
 EMAIL_SENDER="${email_sender}"
 EMAIL_ENABLED="${email_enabled}"
+LOG_GROUP_NAME="${log_group_name}"
 
 # Install updates and dependencies
 amazon-linux-extras install docker -y || yum install -y docker
@@ -52,6 +53,11 @@ fi
 
 docker run -d --restart=always \
   --name book-review \
+  --log-driver awslogs \
+  --log-opt awslogs-region="$REGION" \
+  --log-opt awslogs-group="$LOG_GROUP_NAME" \
+  --log-opt awslogs-create-group=true \
+  --log-opt awslogs-stream="book-review-$(hostname)" \
   -p ${container_port}:${container_port} \
   -e SPRING_PROFILES_ACTIVE=prod \
   -e SERVER_PORT=${container_port} \

@@ -86,6 +86,13 @@ module "frontend" {
   tags         = var.tags
 }
 
+# CloudWatch Logs group for backend application logs
+resource "aws_cloudwatch_log_group" "backend" {
+  name              = "/${var.app_name}/backend"
+  retention_in_days = 14
+  tags              = var.tags
+}
+
 # EC2 module
 module "ec2" {
   source                    = "../../modules/ec2"
@@ -113,5 +120,6 @@ module "ec2" {
   smtp_port                 = var.smtp_port
   email_sender              = var.email_sender
   email_enabled             = var.email_enabled
+  log_group_name            = aws_cloudwatch_log_group.backend.name
   tags                      = var.tags
 }
