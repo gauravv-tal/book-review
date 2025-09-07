@@ -99,6 +99,12 @@ variable "db_url" {
   default     = ""
 }
 
+variable "db_url_secret_arn" {
+  description = "Secrets Manager ARN for the database URL"
+  type        = string
+  default     = ""
+}
+
 variable "smtp_username_secret_arn" {
   description = "Secrets Manager ARN for SMTP username"
   type        = string

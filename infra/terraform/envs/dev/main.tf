@@ -115,6 +115,7 @@ module "ec2" {
   db_password_secret_arn    = lookup(module.secrets.secret_arns, "db/password", "")
   smtp_username_secret_arn  = lookup(module.secrets.secret_arns, "smtp/username", "")
   smtp_password_secret_arn  = lookup(module.secrets.secret_arns, "smtp/password", "")
+  db_url_secret_arn         = var.db_url_secret_arn
   db_url                    = var.db_url
   smtp_host                 = var.smtp_host
   smtp_port                 = var.smtp_port

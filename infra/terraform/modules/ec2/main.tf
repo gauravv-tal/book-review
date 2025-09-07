@@ -147,7 +147,7 @@ resource "aws_launch_template" "this" {
     db_password_secret_arn  = var.db_password_secret_arn
     smtp_username_secret_arn = var.smtp_username_secret_arn
     smtp_password_secret_arn = var.smtp_password_secret_arn
-    db_url                  = var.db_url
+    db_url_secret_arn       = var.db_url_secret_arn
     smtp_host               = var.smtp_host
     smtp_port               = var.smtp_port
     email_sender            = var.email_sender

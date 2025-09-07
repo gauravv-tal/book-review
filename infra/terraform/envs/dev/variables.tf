@@ -75,6 +75,12 @@ variable "db_url" {
   default     = "jdbc:h2:mem:testdb"
 }
 
+variable "db_url_secret_arn" {
+  description = "Secrets Manager ARN for the database URL"
+  type        = string
+  default     = ""
+}
+
 variable "create_rds" {
   description = "Whether to create RDS PostgreSQL"
   type        = bool

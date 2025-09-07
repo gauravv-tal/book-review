@@ -10,7 +10,7 @@ DB_USERNAME_SECRET_ARN="${db_username_secret_arn}"
 DB_PASSWORD_SECRET_ARN="${db_password_secret_arn}"
 SMTP_USERNAME_SECRET_ARN="${smtp_username_secret_arn}"
 SMTP_PASSWORD_SECRET_ARN="${smtp_password_secret_arn}"
-DB_URL="${db_url}"
+DB_URL_SECRET_ARN="${db_url_secret_arn}"
 SMTP_HOST="${smtp_host}"
 SMTP_PORT="${smtp_port}"
 EMAIL_SENDER="${email_sender}"
@@ -38,6 +38,7 @@ DB_USERNAME=$(get_secret "$DB_USERNAME_SECRET_ARN" || echo "")
 DB_PASSWORD=$(get_secret "$DB_PASSWORD_SECRET_ARN" || echo "")
 SMTP_USERNAME=$(get_secret "$SMTP_USERNAME_SECRET_ARN" || echo "")
 SMTP_PASSWORD=$(get_secret "$SMTP_PASSWORD_SECRET_ARN" || echo "")
+DB_URL=$(get_secret "$DB_URL_SECRET_ARN" || echo "")
 
 # Pull image
 IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
