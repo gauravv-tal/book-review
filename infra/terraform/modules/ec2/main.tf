@@ -110,6 +110,17 @@ resource "aws_security_group" "ec2" {
     security_groups = [var.alb_security_group_id]
   }
 
+  dynamic "ingress" {
+    for_each = var.allow_ssh && var.ssh_ingress_cidr != "" ? [1] : []
+    content {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [var.ssh_ingress_cidr]
+      description = "Optional SSH access"
+    }
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -132,6 +143,7 @@ resource "aws_launch_template" "this" {
   name_prefix   = "${var.name_prefix}-lt-"
   image_id      = data.aws_ssm_parameter.ami.value
   instance_type = var.instance_type
+  key_name      = var.key_name != "" ? var.key_name : null
   iam_instance_profile {
     name = aws_iam_instance_profile.this.name
   }

@@ -137,6 +137,30 @@ variable "email_enabled" {
   default     = false
 }
 
+variable "allow_ssh" {
+  description = "Whether to allow SSH access to instances"
+  type        = bool
+  default     = false
+}
+
+variable "ssh_ingress_cidr" {
+  description = "CIDR allowed for SSH access (only used when allow_ssh is true)"
+  type        = string
+  default     = ""
+}
+
+variable "key_name" {
+  description = "Name of the EC2 key pair to attach to instances (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_public_key_path" {
+  description = "Path to a public key file to create an aws_key_pair (optional)"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Common tags"
   type        = map(string)

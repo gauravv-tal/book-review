@@ -147,6 +147,24 @@ variable "log_group_name" {
   default     = ""
 }
 
+variable "key_name" {
+  description = "EC2 Key Pair name to attach to the Launch Template (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "allow_ssh" {
+  description = "Whether to allow SSH access to instances"
+  type        = bool
+  default     = false
+}
+
+variable "ssh_ingress_cidr" {
+  description = "CIDR block allowed for SSH access (used when allow_ssh is true)"
+  type        = string
+  default     = ""
+}
+
 variable "tags" {
   description = "Tags to apply"
   type        = map(string)

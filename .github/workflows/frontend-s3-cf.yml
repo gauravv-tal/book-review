@@ -31,10 +31,17 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Validate required env vars
+        run: |
+          if [ -z "${{ secrets.REACT_APP_API_BASE }}" ]; then
+            echo "REACT_APP_API_BASE secret is required for production build" && exit 1
+          fi
+
       - name: Build
         working-directory: frontend
         env:
           CI: false
+          REACT_APP_API_BASE: ${{ secrets.REACT_APP_API_BASE }}
         run: npm run build
 
       - name: Configure AWS credentials

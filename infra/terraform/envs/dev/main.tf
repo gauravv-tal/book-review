@@ -93,6 +93,18 @@ resource "aws_cloudwatch_log_group" "backend" {
   tags              = var.tags
 }
 
+# Optional: create an EC2 key pair from a provided public key file
+locals {
+  effective_key_name = var.key_name != "" ? var.key_name : (var.ssh_public_key_path != "" ? "${var.app_name}-key" : "")
+}
+
+resource "aws_key_pair" "dev" {
+  count      = var.ssh_public_key_path != "" && var.key_name == "" ? 1 : 0
+  key_name   = "${var.app_name}-key"
+  public_key = file(var.ssh_public_key_path)
+  tags       = var.tags
+}
+
 # EC2 module
 module "ec2" {
   source                    = "../../modules/ec2"
@@ -122,5 +134,8 @@ module "ec2" {
   email_sender              = var.email_sender
   email_enabled             = var.email_enabled
   log_group_name            = aws_cloudwatch_log_group.backend.name
+  key_name                  = local.effective_key_name
+  allow_ssh                 = var.allow_ssh
+  ssh_ingress_cidr          = var.ssh_ingress_cidr
   tags                      = var.tags
 }

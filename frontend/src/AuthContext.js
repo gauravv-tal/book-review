@@ -13,6 +13,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const API_BASE = process.env.REACT_APP_API_BASE || '';
 
   // Load JWT token from localStorage on mount
   useEffect(() => {
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE}${url}`, {
       ...options,
       headers,
     });
@@ -52,9 +53,8 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password) => {
     try {
-      const response = await fetch('/auth/signup', {
+      const response = await apiCall('/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
 
@@ -73,9 +73,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('/auth/login', {
+      const response = await apiCall('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
@@ -104,7 +103,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('/auth/logout', { method: 'POST' });
+      await apiCall('/auth/logout', { method: 'POST' });
     } catch (error) {
       console.warn('Logout request failed:', error);
     } finally {
