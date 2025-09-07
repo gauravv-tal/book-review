@@ -1,18 +1,37 @@
+# Backend
 backend/src/.DS_Store
 /backend/.idea
 backend/src/main/resources/application-dev.properties
+backend/src/main/resources/application-prod.properties
 /backend/target
+
+# Terraform - Sensitive files
 infra/terraform/terraform.tfvars
+infra/terraform/envs/*/terraform.tfvars
 infra/terraform/terraform.tfvars.example
 infra/*/*.tfstate
 infra/*/tfplan
 infra/terraform/.terraform/providers/*
 infra/terraform/.terraform.lock.hcl
-infra/.DS_Store
-.DS_Store
 infra/terraform/envs/dev/bk_review_plan
 infra/terraform/bkreview_plan
 *.tfstate.backup
 *.tfstate
 infra/terraform/envs/dev/.terraform/*
 infra/terraform/envs/dev/.terraform.lock.hcl
+
+# Environment and credential files
+.env
+.env.local
+.env.production
+.env.development
+*.pem
+*.key
+aws-credentials
+.aws/credentials
+
+# System files
+infra/.DS_Store
+.DS_Store
+infra/terraform/envs/dev/terraform.tfvars
+infra/terraform/envs/dev/terraform.tfvars

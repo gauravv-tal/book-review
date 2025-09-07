@@ -8,7 +8,13 @@ CONTAINER_PORT="${container_port}"
 JWT_SECRET_ARN="${jwt_secret_arn}"
 DB_USERNAME_SECRET_ARN="${db_username_secret_arn}"
 DB_PASSWORD_SECRET_ARN="${db_password_secret_arn}"
+SMTP_USERNAME_SECRET_ARN="${smtp_username_secret_arn}"
+SMTP_PASSWORD_SECRET_ARN="${smtp_password_secret_arn}"
 DB_URL="${db_url}"
+SMTP_HOST="${smtp_host}"
+SMTP_PORT="${smtp_port}"
+EMAIL_SENDER="${email_sender}"
+EMAIL_ENABLED="${email_enabled}"
 
 # Install updates and dependencies
 amazon-linux-extras install docker -y || yum install -y docker
@@ -29,6 +35,8 @@ get_secret() {
 JWT_SECRET=$(get_secret "$JWT_SECRET_ARN" || echo "")
 DB_USERNAME=$(get_secret "$DB_USERNAME_SECRET_ARN" || echo "")
 DB_PASSWORD=$(get_secret "$DB_PASSWORD_SECRET_ARN" || echo "")
+SMTP_USERNAME=$(get_secret "$SMTP_USERNAME_SECRET_ARN" || echo "")
+SMTP_PASSWORD=$(get_secret "$SMTP_PASSWORD_SECRET_ARN" || echo "")
 
 # Pull image
 IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
@@ -51,6 +59,12 @@ docker run -d --restart=always \
   -e DB_USERNAME="$DB_USERNAME" \
   -e DB_PASSWORD="$DB_PASSWORD" \
   -e DB_URL="$DB_URL" \
+  -e SMTP_HOST="$SMTP_HOST" \
+  -e SMTP_PORT="$SMTP_PORT" \
+  -e SMTP_USERNAME="$SMTP_USERNAME" \
+  -e SMTP_PASSWORD="$SMTP_PASSWORD" \
+  -e EMAIL_SENDER="$EMAIL_SENDER" \
+  -e EMAIL_ENABLED="$EMAIL_ENABLED" \
   "$IMAGE"
 
 # Optional: install CloudWatch Agent via SSM if needed (not configured here)

@@ -75,6 +75,62 @@ variable "db_url" {
   default     = "jdbc:h2:mem:testdb"
 }
 
+variable "create_rds" {
+  description = "Whether to create RDS PostgreSQL"
+  type        = bool
+  default     = false
+}
+
+variable "db_username" {
+  description = "RDS master username"
+  type        = string
+  default     = "appuser"
+}
+
+variable "db_password" {
+  description = "RDS master password"
+  type        = string
+  sensitive   = true
+  default     = "ChangeMeStrong!123"
+}
+
+variable "smtp_host" {
+  description = "SMTP server host"
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "smtp_port" {
+  description = "SMTP server port"
+  type        = string
+  default     = "587"
+}
+
+variable "smtp_username" {
+  description = "SMTP username"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_password" {
+  description = "SMTP password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "email_sender" {
+  description = "Email sender address"
+  type        = string
+  default     = "no-reply@example.com"
+}
+
+variable "email_enabled" {
+  description = "Enable email functionality"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Common tags"
   type        = map(string)

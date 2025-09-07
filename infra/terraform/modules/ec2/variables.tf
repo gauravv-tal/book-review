@@ -99,6 +99,42 @@ variable "db_url" {
   default     = ""
 }
 
+variable "smtp_username_secret_arn" {
+  description = "Secrets Manager ARN for SMTP username"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_password_secret_arn" {
+  description = "Secrets Manager ARN for SMTP password"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_host" {
+  description = "SMTP server host"
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "smtp_port" {
+  description = "SMTP server port"
+  type        = string
+  default     = "587"
+}
+
+variable "email_sender" {
+  description = "Email sender address"
+  type        = string
+  default     = "no-reply@example.com"
+}
+
+variable "email_enabled" {
+  description = "Enable email functionality"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply"
   type        = map(string)

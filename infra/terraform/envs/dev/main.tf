@@ -91,7 +91,7 @@ module "ec2" {
   source                    = "../../modules/ec2"
   name_prefix               = var.app_name
   vpc_id                    = data.aws_vpc.default.id
-  private_subnet_ids        = data.aws_subnets.private.ids
+  private_subnet_ids        = data.aws_subnets.public.ids
   alb_security_group_id     = module.alb.alb_security_group_id
   target_group_arn          = module.alb.target_group_arn
   instance_type             = var.instance_type
@@ -106,6 +106,12 @@ module "ec2" {
   jwt_secret_arn            = lookup(module.secrets.secret_arns, "jwt/secret", "")
   db_username_secret_arn    = lookup(module.secrets.secret_arns, "db/username", "")
   db_password_secret_arn    = lookup(module.secrets.secret_arns, "db/password", "")
+  smtp_username_secret_arn  = lookup(module.secrets.secret_arns, "smtp/username", "")
+  smtp_password_secret_arn  = lookup(module.secrets.secret_arns, "smtp/password", "")
   db_url                    = var.db_url
+  smtp_host                 = var.smtp_host
+  smtp_port                 = var.smtp_port
+  email_sender              = var.email_sender
+  email_enabled             = var.email_enabled
   tags                      = var.tags
 }

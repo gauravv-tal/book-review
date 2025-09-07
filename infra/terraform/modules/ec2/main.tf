@@ -48,7 +48,9 @@ resource "aws_iam_policy" "secrets_read" {
       Resource = compact([
         var.jwt_secret_arn,
         var.db_username_secret_arn,
-        var.db_password_secret_arn
+        var.db_password_secret_arn,
+        var.smtp_username_secret_arn,
+        var.smtp_password_secret_arn
       ])
     }]
   })
@@ -106,18 +108,65 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    region              = var.region
-    ecr_repo_url        = var.ecr_repository_url
-    image_tag           = var.image_tag
-    container_port      = var.container_port
-    jwt_secret_arn      = var.jwt_secret_arn
-    db_username_secret_arn = var.db_username_secret_arn
-    db_password_secret_arn = var.db_password_secret_arn
-    db_url              = var.db_url
+    region                   = var.region
+    ecr_repo_url            = var.ecr_repository_url
+    image_tag               = var.image_tag
+    container_port          = var.container_port
+    jwt_secret_arn          = var.jwt_secret_arn
+    db_username_secret_arn  = var.db_username_secret_arn
+    db_password_secret_arn  = var.db_password_secret_arn
+    smtp_username_secret_arn = var.smtp_username_secret_arn
+    smtp_password_secret_arn = var.smtp_password_secret_arn
+    db_url                  = var.db_url
+    smtp_host               = var.smtp_host
+    smtp_port               = var.smtp_port
+    email_sender            = var.email_sender
+    email_enabled           = var.email_enabled
   }))
 
   tag_specifications {
     resource_type = "instance"
     tags          = var.tags
+  }
+}
+
+# Auto Scaling Group
+resource "aws_autoscaling_group" "this" {
+  name                = "${var.name_prefix}-asg"
+  vpc_zone_identifier = var.private_subnet_ids
+  target_group_arns   = [var.target_group_arn]
+  health_check_type   = "ELB"
+  health_check_grace_period = 300
+
+  min_size         = var.min_size
+  max_size         = var.max_size
+  desired_capacity = var.desired_capacity
+
+  launch_template {
+    id      = aws_launch_template.this.id
+    version = "$Latest"
+  }
+
+  # Instance refresh for rolling updates
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "${var.name_prefix}-instance"
+    propagate_at_launch = true
+  }
+
+  dynamic "tag" {
+    for_each = var.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
   }
 }
