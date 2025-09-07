@@ -60,7 +60,7 @@ docker run -d --restart=always \
   --log-opt awslogs-create-group=true \
   --log-opt awslogs-stream="book-review-$(hostname)" \
   -p ${container_port}:${container_port} \
-  -e SPRING_PROFILES_ACTIVE=dev \
+  -e SPRING_PROFILES_ACTIVE=prod \
   -e SERVER_PORT=${container_port} \
   -e JWT_SECRET="$JWT_SECRET" \
   -e DB_USERNAME="$DB_USERNAME" \
