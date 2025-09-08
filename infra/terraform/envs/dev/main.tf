@@ -78,12 +78,13 @@ module "alb" {
 
 # Frontend (S3 + CloudFront)
 module "frontend" {
-  source       = "../../modules/frontend"
-  name_prefix  = var.app_name
+  source         = "../../modules/frontend"
+  name_prefix    = var.app_name
   index_document = "index.html"
   error_document = "index.html"
   price_class    = "PriceClass_100"
-  tags         = var.tags
+  alb_domain_name = module.alb.alb_dns_name
+  tags           = var.tags
 }
 
 # CloudWatch Logs group for backend application logs

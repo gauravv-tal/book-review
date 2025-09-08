@@ -46,11 +46,89 @@ resource "aws_cloudfront_distribution" "this" {
   price_class         = var.price_class
   default_root_object = var.index_document
 
+  # S3 origin for static files
   origin {
     domain_name = aws_s3_bucket.site.bucket_regional_domain_name
     origin_id   = "s3-${aws_s3_bucket.site.id}"
 
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
+  }
+
+  # ALB origin for API requests
+  origin {
+    domain_name = var.alb_domain_name
+    origin_id   = "alb-${var.name_prefix}"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  # Cache behavior for API requests
+  ordered_cache_behavior {
+    path_pattern           = "/auth/*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Content-Type", "Origin", "Accept"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/books*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Content-Type", "Origin", "Accept"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 300
+    max_ttl     = 3600
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/actuator/*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
   }
 
   default_cache_behavior {

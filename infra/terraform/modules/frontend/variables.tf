@@ -26,3 +26,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "alb_domain_name" {
+  description = "ALB domain name for API requests"
+  type        = string
+}
