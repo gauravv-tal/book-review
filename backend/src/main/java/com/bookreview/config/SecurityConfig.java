@@ -28,38 +28,39 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Configure actuator endpoints security
-        http.securityMatcher("/actuator/**")
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health/**").permitAll()
-                .requestMatchers("/actuator/info").permitAll()
-                .requestMatchers("/actuator/**").hasRole("ACTUATOR")
-                .anyRequest().denyAll()
-            )
-            .httpBasic();
-
-        // Configure application security
-        http.securityMatcher("/**")
+        http
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Public endpoints
                 .requestMatchers(
                     "/auth/**",
                     "/api/hello",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
-                    "/swagger-ui.html"
+                    "/swagger-ui.html",
+                    "/actuator/health/**",
+                    "/actuator/info"
                 ).permitAll()
+                // Public API endpoints
                 .requestMatchers("/books/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/reviews/book/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/recommendations/top-rated").permitAll()
+                
+                // Protected endpoints
                 .requestMatchers("/recommendations/ai").authenticated()
                 .requestMatchers("/favourites/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                // All other actuator endpoints require authentication
+                .requestMatchers("/actuator/**").hasRole("ACTUATOR")
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            
         return http.build();
     }
 
