@@ -9,43 +9,29 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.frontend.url:http://dv8y18ytmxass.cloudfront.net}")
-    private String frontendUrl;
+    // Comma-separated list of origin patterns, e.g.
+    // http://*.cloudfront.net,https://*.cloudfront.net,http://*.elb.amazonaws.com,https://*.elb.amazonaws.com,http://localhost:3000,https://localhost:3000
+    @Value("${app.cors.allowed-origin-patterns:http://*.cloudfront.net,https://*.cloudfront.net,http://*.elb.amazonaws.com,https://*.elb.amazonaws.com,http://localhost:3000,https://localhost:3000}")
+    private String allowedOriginPatterns;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Build an allowlist for both HTTPS and HTTP variants of the frontend and ALB domains
-        String httpVariant = frontendUrl.startsWith("https://")
-            ? frontendUrl.replace("https://", "http://")
-            : frontendUrl.startsWith("http://") ? frontendUrl : ("http://" + frontendUrl);
-        String httpsVariant = frontendUrl.startsWith("http://")
-            ? frontendUrl.replace("http://", "https://")
-            : frontendUrl.startsWith("https://") ? frontendUrl : ("https://" + frontendUrl);
-
-        // NOTE: Keep this list tight; these are the only allowed browser origins
-        configuration.setAllowedOrigins(Arrays.asList(
-            // CloudFront (both schemes)
-            frontendUrl,   // as provided (http or https)
-            httpVariant,   // explicit http variant
-            httpsVariant,  // explicit https variant
-            // ALB (both schemes)
-            "http://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
-            "https://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
-            // Local development
-            "http://localhost:3000",
-            "https://localhost:3000"
-        ));
+        // Use origin PATTERNS so wildcards are supported and scheme differences don't break matching
+        List<String> patterns = Arrays.stream(allowedOriginPatterns.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toList());
+        configuration.setAllowedOriginPatterns(patterns);
         
         // Allow all HTTP methods
-        configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         
         // Allow all headers
         configuration.setAllowedHeaders(Arrays.asList("*"));
