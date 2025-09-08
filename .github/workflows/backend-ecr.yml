@@ -68,11 +68,17 @@ jobs:
       - name: Login to Amazon ECR
         run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin "${{ steps.ecr.outputs.repo }}"
 
-      - name: Build Docker image
-        run: docker build -t "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG" backend/
+      - name: Build Docker image (SHA and latest)
+        run: |
+          docker build \
+            -t "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG" \
+            -t "${{ steps.ecr.outputs.repo }}:latest" \
+            backend/
 
-      - name: Push Docker image
-        run: docker push "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG"
+      - name: Push Docker images (SHA and latest)
+        run: |
+          docker push "${{ steps.ecr.outputs.repo }}:$IMAGE_TAG"
+          docker push "${{ steps.ecr.outputs.repo }}:latest"
 
       - name: Output image ref
         run: |
