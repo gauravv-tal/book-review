@@ -13,17 +13,26 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.frontend.url:https://dv8y18ytmxass.cloudfront.net}")
+    @Value("${app.frontend.url:http://dv8y18ytmxass.cloudfront.net}")
     private String frontendUrl;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Allow specific origins
+
+        // Build an allowlist for both HTTPS and HTTP variants of the frontend and ALB domains
+        String httpVariant = frontendUrl.replace("https://", "http://");
+
+        // NOTE: Keep this list tight; these are the only allowed browser origins
         configuration.setAllowedOrigins(Arrays.asList(
+            // CloudFront (both schemes)
             frontendUrl,
-            "http://localhost:3000", // For local development
+            httpVariant,
+            // ALB (both schemes)
+            "http://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
+            "https://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
+            // Local development
+            "http://localhost:3000",
             "https://localhost:3000"
         ));
         

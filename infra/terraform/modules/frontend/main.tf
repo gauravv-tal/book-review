@@ -71,7 +71,7 @@ resource "aws_cloudfront_distribution" "this" {
   ordered_cache_behavior {
     path_pattern           = "/auth/*"
     target_origin_id       = "alb-${var.name_prefix}"
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all"
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods         = ["GET", "HEAD"]
     compress               = true
@@ -92,28 +92,91 @@ resource "aws_cloudfront_distribution" "this" {
   ordered_cache_behavior {
     path_pattern           = "/books*"
     target_origin_id       = "alb-${var.name_prefix}"
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all"
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
     forwarded_values {
       query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin", "Accept"]
+      headers      = ["*"]
       cookies {
         forward = "all"
       }
     }
 
     min_ttl     = 0
-    default_ttl = 300
-    max_ttl     = 3600
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/recommendations/*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "allow-all"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/reviews/*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "allow-all"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/favourites/*"
+    target_origin_id       = "alb-${var.name_prefix}"
+    viewer_protocol_policy = "allow-all"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["*"]
+      cookies {
+        forward = "all"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
   }
 
   ordered_cache_behavior {
     path_pattern           = "/actuator/*"
     target_origin_id       = "alb-${var.name_prefix}"
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
     compress               = true
@@ -133,7 +196,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   default_cache_behavior {
     target_origin_id       = "s3-${aws_s3_bucket.site.id}"
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
 
