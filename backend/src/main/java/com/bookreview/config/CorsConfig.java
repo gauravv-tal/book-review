@@ -21,13 +21,19 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Build an allowlist for both HTTPS and HTTP variants of the frontend and ALB domains
-        String httpVariant = frontendUrl.replace("https://", "http://");
+        String httpVariant = frontendUrl.startsWith("https://")
+            ? frontendUrl.replace("https://", "http://")
+            : frontendUrl.startsWith("http://") ? frontendUrl : ("http://" + frontendUrl);
+        String httpsVariant = frontendUrl.startsWith("http://")
+            ? frontendUrl.replace("http://", "https://")
+            : frontendUrl.startsWith("https://") ? frontendUrl : ("https://" + frontendUrl);
 
         // NOTE: Keep this list tight; these are the only allowed browser origins
         configuration.setAllowedOrigins(Arrays.asList(
             // CloudFront (both schemes)
-            frontendUrl,
-            httpVariant,
+            frontendUrl,   // as provided (http or https)
+            httpVariant,   // explicit http variant
+            httpsVariant,  // explicit https variant
             // ALB (both schemes)
             "http://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
             "https://book-review-alb-1256559597.ap-south-1.elb.amazonaws.com",
