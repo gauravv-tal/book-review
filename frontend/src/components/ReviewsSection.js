@@ -118,7 +118,7 @@ const ReviewsSection = ({
               <div>
                 <StarRating rating={review.rating} disabled={true} />
                 <span style={{ marginLeft: '8px', color: '#666', fontSize: '14px' }}>
-                  {review.userName} • {new Date(review.createdAt).toLocaleDateString()}
+                  {(review.userName || (review.user && review.user.name) || 'Anonymous')} • {new Date(review.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
