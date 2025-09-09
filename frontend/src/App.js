@@ -58,30 +58,6 @@ const Home = () => {
         <h2>Join Our Community</h2>
         <p>Create an account to start reviewing books and connecting with other readers.</p>
         <div style={{ marginTop: '20px' }}>
-          <a href="/signup" style={{
-            background: 'white',
-            color: '#667eea',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontWeight: '600',
-            marginRight: '10px',
-            display: 'inline-block'
-          }}>
-            Sign Up Now
-          </a>
-          <a href="/login" style={{
-            background: 'transparent',
-            color: 'white',
-            padding: '12px 24px',
-            border: '2px solid white',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontWeight: '600',
-            display: 'inline-block'
-          }}>
-            Login
-          </a>
         </div>
       </div>
     </div>
